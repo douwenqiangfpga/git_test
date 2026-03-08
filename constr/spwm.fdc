@@ -1,0 +1,39 @@
+create_clock -name {clk} [get_ports i_clk] -period {20} -waveform {0.000 10.000}
+create_generated_clock -name {clk_100} -source [get_ports {i_clk}] [get_pins PLL_IP_inst/clkout0] -master_clock [get_clocks clk] -multiply_by {2} -divide_by {1}
+
+set_clock_groups -name clk_g -asynchronous -group [get_clocks {clk}]
+set_clock_groups -name clkout0_g -asynchronous -group [get_clocks {clk_100}]
+
+define_attribute {p:o_pwm1} {PAP_IO_DIRECTION} {OUTPUT}
+define_attribute {p:o_pwm1} {PAP_IO_LOC} {G20}
+define_attribute {p:o_pwm1} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:o_pwm1} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:o_pwm2} {PAP_IO_DIRECTION} {OUTPUT}
+define_attribute {p:o_pwm2} {PAP_IO_LOC} {G22}
+define_attribute {p:o_pwm2} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:o_pwm2} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:o_pwm3} {PAP_IO_DIRECTION} {OUTPUT}
+define_attribute {p:o_pwm3} {PAP_IO_LOC} {K20}
+define_attribute {p:o_pwm3} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:o_pwm3} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:o_pwm4} {PAP_IO_DIRECTION} {OUTPUT}
+define_attribute {p:o_pwm4} {PAP_IO_LOC} {K19}
+define_attribute {p:o_pwm4} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:o_pwm4} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:i_clk} {PAP_IO_DIRECTION} {INPUT}
+define_attribute {p:i_clk} {PAP_IO_LOC} {AB11}
+define_attribute {p:i_clk} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:i_clk} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:i_rst_n} {PAP_IO_DIRECTION} {INPUT}
+define_attribute {p:i_rst_n} {PAP_IO_LOC} {AB12}
+define_attribute {p:i_rst_n} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:i_rst_n} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:o_led} {PAP_IO_DIRECTION} {OUTPUT}
+define_attribute {p:o_led} {PAP_IO_LOC} {AB4}
+define_attribute {p:o_led} {PAP_IO_VCCIO} {3.3}
+define_attribute {p:o_led} {PAP_IO_STANDARD} {LVCMOS33}
+define_attribute {p:o_pwm1} {PAP_IO_PULLDW} {TRUE}
+define_attribute {p:o_pwm2} {PAP_IO_PULLDW} {TRUE}
+define_attribute {p:o_pwm3} {PAP_IO_PULLDW} {TRUE}
+define_attribute {p:o_pwm4} {PAP_IO_PULLDW} {TRUE}
+define_attribute {p:o_pwm1} {PAP_IO_OPEN_DRAIN} {ON}

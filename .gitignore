@@ -1,0 +1,63 @@
+# =========================================================
+# FPGA project .gitignore
+# 当前工程：git_test
+# =========================================================
+
+# -----------------------------
+# IDE generated project
+# -----------------------------
+prj/
+
+# -----------------------------
+# ModelSim / Questa simulation generated files
+# -----------------------------
+work/
+script/work/
+
+transcript
+script/transcript
+
+*.log
+sim.log
+script/sim.log
+
+*.wlf
+vsim.wlf
+
+modelsim.ini
+script/modelsim.ini
+
+vsim_stacktrace.vstf
+
+# -----------------------------
+# Temporary / backup files
+# -----------------------------
+*.bak
+*.tmp
+*.swp
+*.jou
+
+# -----------------------------
+# Editor / IDE files
+# -----------------------------
+.vscode/
+.idea/
+
+# -----------------------------
+# OS generated files
+# -----------------------------
+.DS_Store
+Thumbs.db
+
+# -----------------------------
+# IP generated metadata
+# -----------------------------
+**/.last_generated
+**/.settings
+
+# -----------------------------
+# IP template / example tb files
+# -----------------------------
+*_tmpl.v
+*_tmpl.vhdl
+*_tb.v

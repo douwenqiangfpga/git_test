@@ -61,3 +61,18 @@ Thumbs.db
 *_tmpl.v
 *_tmpl.vhdl
 *_tb.v
+
+# PDS flow outputs
+build/
+scripts/compile/
+scripts/synthesize/
+scripts/device_map/
+scripts/place_route/
+scripts/generate_bitstream/
+scripts/report_timing/
+scripts/work/
+scripts/*.pds
+scripts/flow.log
+scripts/run.log
+scripts/sources_info.log
+scripts/multiseed_summary.csv

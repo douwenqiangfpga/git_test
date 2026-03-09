@@ -19,7 +19,7 @@
         </param>
         <param>
             <name>ADDR_WIDTH</name>
-            <value>8</value>
+            <value>10</value>
         </param>
         <param>
             <name>CLK_EN</name>
@@ -35,7 +35,7 @@
         </param>
         <param>
             <name>DRM_MODE_SEL</name>
-            <value>AUTO</value>
+            <value>DRM18K</value>
         </param>
         <param>
             <name>INIT_EN</name>
@@ -43,7 +43,7 @@
         </param>
         <param>
             <name>INIT_FILE</name>
-            <value>E:/FPGA/ainuo/AN1640/test_prj/spwm/SPWM/source/sine_256_u12.dat</value>
+            <value>E:/FPGA/ainuo/AN1640/git_test/doc/spwm_sine_256_u12.dat</value>
         </param>
         <param>
             <name>INIT_FORMAT</name>
@@ -51,11 +51,11 @@
         </param>
         <param>
             <name>MODE_18K</name>
-            <value>false</value>
+            <value>true</value>
         </param>
         <param>
             <name>MODE_9K</name>
-            <value>true</value>
+            <value>false</value>
         </param>
         <param>
             <name>OUTPUT_REG</name>
@@ -80,7 +80,7 @@
             <text>addr</text>
             <dir>input</dir>
             <pos>left</pos>
-            <msb>7</msb>
+            <msb>9</msb>
             <lsb>0</lsb>
         </pin>
         <pin>

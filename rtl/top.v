@@ -9,7 +9,7 @@ module top #(
     //========================
     // LUT / DDS 参数
     //========================
-    parameter integer LUT_ADDR_W     = 8,           // 256点正弦表
+    parameter integer LUT_ADDR_W     = 10,           // 1024点正弦表
     parameter integer PHASE_ACC_W    = 32,          // DDS相位累加器宽度
 
     //========================
@@ -17,7 +17,7 @@ module top #(
     //========================
     parameter integer CARRIER_W      = 12,          // 载波计数位宽（需覆盖 PWM_PERIOD_CNT）
     parameter integer MOD_W          = 12,          // 调制比位宽（Q0.MOD_W, 满量程≈1.0）
-    parameter integer SINE_W         = 10,          // LUT输出位宽（0 ~ PWM_PERIOD_CNT-1 映射前的归一化幅值）
+    parameter integer SINE_W         = 12,          // LUT输出位宽（0 ~ PWM_PERIOD_CNT-1 映射前的归一化幅值）
     parameter integer REF_W          = 12,          // 比较参考位宽（映射到载波范围）
 
     //========================
@@ -41,10 +41,17 @@ wire pwm_l     ;
 wire pll_lock  /*synthesis PAP_MARK_DEBUG = "1"*/;
 wire clkout0  /*synthesis PAP_MARK_DEBUG = "1"*/;
 
+//PLL_IP PLL_IP_inst (
+//  .clkin1  (i_clk   ),        // input 50.0MHz
+//  .pll_lock(pll_lock),    // output
+//  .clkout0 (clkout0)       // output 100.0MHz
+//);
+
 PLL_IP PLL_IP_inst (
-  .clkin1  (i_clk   ),        // input 50.0MHz
+  .pll_rst(!i_rst_n),      // input
+  .clkin1(i_clk),        // input 50.0MHz
   .pll_lock(pll_lock),    // output
-  .clkout0 (clkout0)       // output 100.0MHz
+  .clkout0(clkout0)       // output 25.0MHz
 );
 
 led led_inst(
@@ -54,14 +61,14 @@ led led_inst(
 );
 
 spwm_single_top #(
-   .CLK_HZ         (100_000_000), // 系统时钟，仅用于说明/注释
+   .CLK_HZ         (100_000_000), // 系统时钟，
    .PWM_PERIOD_CNT (500       ) ,// 中心对齐半周期计数上限（0~PWM_PERIOD_CNT-1）
                                                    // f_pwm ≈ CLK_HZ / (2*PWM_PERIOD_CNT)
 
    //========================
    // LUT / DDS 参数
    //========================
-   .LUT_ADDR_W     (8   ),           // 256点正弦表
+   .LUT_ADDR_W     (10   ),           // 256点正弦表
    .PHASE_ACC_W    (32  ),          // DDS相位累加器宽度
 
     //========================

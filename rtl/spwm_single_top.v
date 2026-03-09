@@ -10,7 +10,7 @@ module spwm_single_top #(
     //========================
     // LUT / DDS 参数
     //========================
-    parameter integer LUT_ADDR_W     = 8,           // 256点正弦表
+    parameter integer LUT_ADDR_W     = 10,           // 256点正弦表
     parameter integer PHASE_ACC_W    = 32,          // DDS相位累加器宽度
 
     //========================
@@ -122,7 +122,7 @@ module spwm_single_top #(
     //);
 
     spwm_sine_lut_256_u12 u_sine_lut (
-      .addr(lut_addr),          // input [7:0]
+      .addr(lut_addr),          // input [9:0]
       .clk(i_clk),            // input
       .rst(!i_rst_n),            // input
       .rd_data(sine_u)     // output [11:0]

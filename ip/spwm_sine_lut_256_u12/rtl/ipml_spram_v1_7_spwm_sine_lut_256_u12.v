@@ -50,9 +50,9 @@ module ipml_spram_v1_7_spwm_sine_lut_256_u12
 
 localparam INIT_EN = 1 ; // @IPC bool
 
-localparam MODE_9K = 1 ; // @IPC bool
+localparam MODE_9K = 0 ; // @IPC bool
 
-localparam MODE_18K = 0 ; // @IPC bool
+localparam MODE_18K = 1 ; // @IPC bool
 
 `include "spwm_sine_lut_256_u12_init_param.v"
 
@@ -61,17 +61,17 @@ localparam MODE_18K = 0 ; // @IPC bool
  //L_DATA_WIDTH is the parameter value of DATA_WIDTH_A and DATA_WIDTH_B in a instance DRM ,define witch type DRM to instance in noraml mode
 //********************************************************************************************************************************************************************
 localparam  c_WR_BYTE_WIDTH = c_WR_BYTE_EN ? c_DATA_WIDTH/(c_BE_WIDTH==0 ? 1 : c_BE_WIDTH) : (c_DATA_WIDTH%9 ==0 ? 9 : (c_DATA_WIDTH%8 ==0) ? 8 : 9 );
-localparam  N_DATA_WIDTH = c_ADDR_WIDTH <= 8  ? (c_DATA_WIDTH%9 == 0 ? ( (c_ADDR_STROBE_EN == 1) ? 18 : 36 ) :
-                                               (c_DATA_WIDTH%8 == 0) ? ( (c_ADDR_STROBE_EN == 1) ? 16 : 32 ) :
-                                                                       ( (c_ADDR_STROBE_EN == 1) ? 18 : 36 ) ):   //cascade with 512*36 type DRM
-                           c_ADDR_WIDTH == 9  ? (c_DATA_WIDTH%9 == 0 ? 18 :
-                                               (c_DATA_WIDTH%8 == 0) ? 16 :
-                                                                       18 ):   //cascade with 1k*18  type DRM
-                           c_ADDR_WIDTH == 10 ? (c_DATA_WIDTH%9 == 0 ? 9  :
-                                               (c_DATA_WIDTH%8 == 0) ? 8  :
-                                                                       9  ):   //cascade with 2k*9   type DRM
-                           c_ADDR_WIDTH == 11 ? 4:                                 //cascade with 4k*4   type DRM
-                           c_ADDR_WIDTH == 12 ? 2:                                 //cascade with 8k*2   type DRM
+localparam  N_DATA_WIDTH = c_ADDR_WIDTH <= 9  ? ( (c_DATA_WIDTH%9 == 0) ? ( (c_ADDR_STROBE_EN == 1) ? 18 : 36 ) :
+                                                  (c_DATA_WIDTH%8 == 0) ? ( (c_ADDR_STROBE_EN == 1) ? 16 : 32 ) :
+                                                                          ( (c_ADDR_STROBE_EN == 1) ? 18 : 36 ) ):   //cascade with 512*36 type DRM
+                           c_ADDR_WIDTH == 10 ? ( (c_DATA_WIDTH%9 == 0) ? 18 :
+                                                  (c_DATA_WIDTH%8 == 0) ? 16 :
+                                                                          18 ):   //cascade with 1k*18  type DRM
+                           c_ADDR_WIDTH == 11 ? ( (c_DATA_WIDTH%9 == 0) ? 9  :
+                                                  (c_DATA_WIDTH%8 == 0) ? 8  :
+                                                                          9  ):   //cascade with 2k*9   type DRM
+                           c_ADDR_WIDTH == 12 ? 4:                                 //cascade with 4k*4   type DRM
+                           c_ADDR_WIDTH == 13 ? 2:                                 //cascade with 8k*2   type DRM
                                                 1;                                 //cascade with 16k*1  type DRM
 
 localparam  L_DATA_WIDTH = c_DATA_WIDTH == 1  ? 1:                 //cascade with 16k*1  type DRM
@@ -105,15 +105,15 @@ localparam  DATA_LOOP_NUM  = (c_DATA_WIDTH%DRM_DATA_WIDTH == 0) ? (c_DATA_WIDTH/
 
 localparam  Q_DATA_WIDTH  = (DRM_DATA_WIDTH == 36) ? 18 : (DRM_DATA_WIDTH == 32) ? 16 : DRM_DATA_WIDTH;
 //DRM_ADDR_WIDTH is the ADDR_WIDTH of INSTANCE DRM primitives
-localparam  DRM_ADDR_WIDTH = DRM_DATA_WIDTH == 1  ? 13:
-                             DRM_DATA_WIDTH == 2  ? 12:
-                             DRM_DATA_WIDTH == 4  ? 11:
-                             DRM_DATA_WIDTH == 8  ? 10:
-                             DRM_DATA_WIDTH == 9  ? 10:
-                             DRM_DATA_WIDTH == 16 ?  9:
-                             DRM_DATA_WIDTH == 18 ?  9:
-                             DRM_DATA_WIDTH == 32 ?  8:
-                                                     8;
+localparam  DRM_ADDR_WIDTH = DRM_DATA_WIDTH == 1  ? 14:
+                             DRM_DATA_WIDTH == 2  ? 13:
+                             DRM_DATA_WIDTH == 4  ? 12:
+                             DRM_DATA_WIDTH == 8  ? 11:
+                             DRM_DATA_WIDTH == 9  ? 11:
+                             DRM_DATA_WIDTH == 16 ? 10:
+                             DRM_DATA_WIDTH == 18 ? 10:
+                             DRM_DATA_WIDTH == 32 ?  9:
+                                                     9;
 
 localparam  ADDR_WIDTH  = c_ADDR_WIDTH > DRM_ADDR_WIDTH ? c_ADDR_WIDTH : DRM_ADDR_WIDTH;
 //CS_ADDR_WIDTH is the CS address width to choose the DRM18K CS_ADDR_WIDTH=  [ extra-addres + cs[2]+csp[1]+cs[0] ]
@@ -136,7 +136,7 @@ localparam c_RST_TYPE = (c_RESET_TYPE == "SYNC_RESET") ? "SYNC" : ((c_RESET_TYPE
 
 //parameter  check
 initial begin
-   if(c_ADDR_WIDTH>20 || c_ADDR_WIDTH<8  ) begin
+   if(c_ADDR_WIDTH>20 || c_ADDR_WIDTH<8 ) begin
       $display("IPSpecCheck: 01030300 ipml_flex_spram parameter setting error !!!: c_ADDR_WIDTH must between 8-20")/* PANGO PAP_WARNING */;
       //$finish;
    end
@@ -172,8 +172,8 @@ initial begin
       $display("IPSpecCheck: 01030309 ipml_flex_spram parameter setting error !!!: c_ADDR_STROBE_EN must be 0 or 1")/* PANGO PAP_ERROR */;
       $finish;
    end
-   else if (c_CLK_EN==1 && c_ADDR_STROBE_EN==1) begin
-      $display("IPSpecCheck: 01030310 ipml_flex_spram parameter setting error !!!: Clock Enable and Address Strobe only works individually")/* PANGO PAP_ERROR */;
+   else if ( c_SIM_DEVICE=="PGL22G" && (c_CLK_EN==1 && c_ADDR_STROBE_EN==1) ) begin
+      $display("IPSpecCheck: 01030310 ipml_flex_spram parameter setting error !!!: Clock Enable and Address Strobe only works individually when using PGL22G")/* PANGO PAP_ERROR */;
       $finish;
    end
    else if(c_RST_TYPE!="ASYNC" && c_RST_TYPE!="SYNC" && c_RST_TYPE!="ASYNC_SYNC_RELEASE") begin
@@ -223,7 +223,7 @@ wire [CAS_DATA_WIDTH-1:0]                  wr_data_bus   ;
 reg  [Q_CAS_DATA_WIDTH-1:0]                da_data_bus   ;        //the data bus of data_cascaded instance DRM
 wire [Q_CAS_DATA_WIDTH*ADDR_LOOP_NUM-1:0]  qa_data_bus   ;        //the total data width of instance DRM
 wire [ADDR_WIDTH-1:0]                      addr_bus      ;
-reg  [DATA_LOOP_NUM*13-1:0]                drm_addr      ;        //write address to all instance DRM
+reg  [DATA_LOOP_NUM*14-1:0]                drm_addr      ;        //write address to all instance DRM
 reg                                        cs_bit0       ;        //write cs[0]  to all instance DRM
 reg  [ADDR_LOOP_NUM-1:0]                   cs_bit1_bus   ;        //write cs[1]  to all instance DRM
 reg  [ADDR_LOOP_NUM-1:0]                   cs_bit2_bus   ;        //write cs[2] bus  to every data_cascaded DRM-block
@@ -239,13 +239,14 @@ wire                                       clk_en_b      ;
 reg  [CAS_DATA_WIDTH*ADDR_LOOP_NUM-1:0]    rd_data_bus   ;
 reg  [Q_CAS_DATA_WIDTH-1:0]                db_data_bus   ;        //the data bus of data_cascaded instance DRM
 wire [Q_CAS_DATA_WIDTH*ADDR_LOOP_NUM-1:0]  qb_data_bus   ;        //the total data width of instance DRM
-reg  [DATA_LOOP_NUM*13-1:0]                drm_b_addr    ;
+reg  [DATA_LOOP_NUM*14-1:0]                drm_b_addr    ;
 reg                                        csb_bit0      ;        //write cs[0]  to all instance DRM
 reg  [ADDR_LOOP_NUM-1:0]                   csb_bit1_bus  ;        //write cs[1]  to all instance DRM
 reg  [ADDR_LOOP_NUM-1:0]                   csb_bit2_bus  ;        //write cs[2] bus  to every data_cascaded DRM-block
 wire                                       csb_bit0_m     ;
 wire [ADDR_LOOP_NUM-1:0]                   csb_bit1_bus_m ;
 wire [ADDR_LOOP_NUM-1:0]                   csb_bit2_bus_m ;
+wire [ADDR_LOOP_NUM-1:0]                   cs2_ctrl       ;
 
 //byte enable
 wire [CAS_DATA_WIDTH/WR_BYTE_WIDTH-1 : 0]  wr_byte_en_bus;
@@ -263,40 +264,40 @@ always@(*) begin
    for(gen_wa=0;gen_wa < DATA_LOOP_NUM;gen_wa = gen_wa +1 ) begin
       case(DRM_DATA_WIDTH)
          1     : begin
-                     drm_addr[gen_wa*13 +: 13]   = addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0];
-                     drm_b_addr[gen_wa*13 +: 13] = addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0];
+                     drm_addr[gen_wa*14 +: 14]   = addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0];
+                     drm_b_addr[gen_wa*14 +: 14] = addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0];
                  end
          2     : begin
-                     drm_addr[gen_wa*13 +: 13]   = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],1'b0};
-                     drm_b_addr[gen_wa*13 +: 13] = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],1'b0};
+                     drm_addr[gen_wa*14 +: 14]   = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],1'b0};
+                     drm_b_addr[gen_wa*14 +: 14] = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],1'b0};
                  end
          4     : begin
-                     drm_addr[gen_wa*13 +: 13]   = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],2'b00};
-                     drm_b_addr[gen_wa*13 +: 13] = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],2'b00};
+                     drm_addr[gen_wa*14 +: 14]   = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],2'b00};
+                     drm_b_addr[gen_wa*14 +: 14] = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],2'b00};
                  end
          8,9   : begin
-                     drm_addr[gen_wa*13 +: 13]   = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],3'b000};
-                     drm_b_addr[gen_wa*13 +: 13] = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],3'b000};
+                     drm_addr[gen_wa*14 +: 14]   = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],3'b000};
+                     drm_b_addr[gen_wa*14 +: 14] = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],3'b000};
                  end
          16,18 : begin
-                     drm_addr[gen_wa*13 +: 13]   = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],2'b00,wr_byte_en_bus[gen_wa*2 +: 2]};
-                     drm_b_addr[gen_wa*13 +: 13] = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],4'b0000};
+                     drm_addr[gen_wa*14 +: 14]   = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],2'b00,wr_byte_en_bus[gen_wa*2 +: 2]};
+                     drm_b_addr[gen_wa*14 +: 14] = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],4'b0000};
                  end
          32,36 : begin
                      if ((DRM_DATA_WIDTH > 18) && (c_WRITE_MODE != "NORMAL_WRITE"))
                      begin
-                         drm_addr[gen_wa*13 +: 13]   = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],3'b000,wr_byte_en_bus[gen_wa*4 +: 2]};
-                         drm_b_addr[gen_wa*13 +: 13] = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],3'b100,wr_byte_en_bus[gen_wa*4+2 +: 2]};
+                         drm_addr[gen_wa*14 +: 14]   = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],3'b000,wr_byte_en_bus[gen_wa*4 +: 2]};
+                         drm_b_addr[gen_wa*14 +: 14] = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],3'b100,wr_byte_en_bus[gen_wa*4+2 +: 2]};
                      end
                      else
                      begin
-                         drm_addr[gen_wa*13 +: 13]   = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],1'b0,wr_byte_en_bus[gen_wa*4 +: 4]};
-                         drm_b_addr[gen_wa*13 +: 13] = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],1'b0,wr_byte_en_bus[gen_wa*4 +: 4]};
+                         drm_addr[gen_wa*14 +: 14]   = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],1'b0,wr_byte_en_bus[gen_wa*4 +: 4]};
+                         drm_b_addr[gen_wa*14 +: 14] = {addr_bus[(ADDR_WIDTH-CS_ADDR_WIDTH-1):0],1'b0,wr_byte_en_bus[gen_wa*4 +: 4]};
                      end
                  end
          default: begin
-                      drm_addr[gen_wa*13 +: 13]   = 13'b0;
-                      drm_b_addr[gen_wa*13 +: 13] = 13'b0;
+                      drm_addr[gen_wa*14 +: 14]   = 14'b0;
+                      drm_b_addr[gen_wa*14 +: 14] = 14'b0;
                   end
       endcase
    end
@@ -413,9 +414,9 @@ begin
     end
 end
 
-assign cs_bit0_m     = addr_strobe ? cs_bit0_ff     : cs_bit0;
-assign cs_bit1_bus_m = addr_strobe ? cs_bit1_bus_ff : cs_bit1_bus;
-assign cs_bit2_bus_m = addr_strobe ? cs_bit2_bus_ff : cs_bit2_bus;
+assign cs_bit0_m     = (c_SIM_DEVICE == "PGL22G") ? (addr_strobe ? cs_bit0_ff     : cs_bit0    ) : cs_bit0;
+assign cs_bit1_bus_m = (c_SIM_DEVICE == "PGL22G") ? (addr_strobe ? cs_bit1_bus_ff : cs_bit1_bus) : cs_bit1_bus;
+assign cs_bit2_bus_m = (c_SIM_DEVICE == "PGL22G") ? (addr_strobe ? cs_bit2_bus_ff : cs_bit2_bus) : cs_bit2_bus;
 
 assign csb_bit0_m     = cs_bit0_m;
 assign csb_bit1_bus_m = cs_bit1_bus_m;
@@ -425,13 +426,6 @@ wire [18*DATA_LOOP_NUM*ADDR_LOOP_NUM-1:0]  QA_bus;
 wire [18*DATA_LOOP_NUM*ADDR_LOOP_NUM-1:0]  QB_bus;
 wire [18*DATA_LOOP_NUM-1:0]                DA_bus;
 wire [18*DATA_LOOP_NUM-1:0]                DB_bus;
-
-//9k MASK select
-wire [ADDR_LOOP_NUM*DATA_LOOP_NUM-1:0]     csa_mask_wr;
-wire [ADDR_LOOP_NUM*DATA_LOOP_NUM-1:0]     csa_mask_rd;
-
-wire [ADDR_LOOP_NUM*DATA_LOOP_NUM-1:0]     csb_mask_wr;
-wire [ADDR_LOOP_NUM*DATA_LOOP_NUM-1:0]     csb_mask_rd;
 
 integer  drm_d_i;
 always@(*) begin
@@ -484,12 +478,7 @@ generate
         assign wr_en_b  = (DRM_DATA_WIDTH <= 18) ? 1'b0 : (c_WRITE_MODE == "NORMAL_WRITE") ? 1'b0 : wr_en;
         assign clk_en_b = (DRM_DATA_WIDTH <= 18) ? 1'b0 : (c_WRITE_MODE == "NORMAL_WRITE") ? ~wr_en & clk_en : clk_en;
 
-        assign csa_mask_wr[gen_i + DATA_LOOP_NUM*gen_j] = ((DRM_DATA_WIDTH > 18) && (c_WRITE_MODE == "NORMAL_WRITE")) ? (({cs_bit2_bus_m[gen_j],cs_bit1_bus_m[gen_j],cs_bit0_m} == CSA_MASK_SEL) | ({csb_bit2_bus_m[gen_j],csb_bit1_bus_m[gen_j],csb_bit0_m} == CSB_MASK_SEL))
-                                                                                                                      : ({cs_bit2_bus_m[gen_j],cs_bit1_bus_m[gen_j],cs_bit0_m} == CSA_MASK_SEL);
-        assign csb_mask_wr[gen_i + DATA_LOOP_NUM*gen_j] = ((DRM_DATA_WIDTH > 18) && (c_WRITE_MODE == "NORMAL_WRITE")) ? (({cs_bit2_bus_m[gen_j],cs_bit1_bus_m[gen_j],cs_bit0_m} == CSA_MASK_SEL) | ({csb_bit2_bus_m[gen_j],csb_bit1_bus_m[gen_j],csb_bit0_m} == CSB_MASK_SEL))
-                                                                                                                      : ({csb_bit2_bus_m[gen_j],csb_bit1_bus_m[gen_j],csb_bit0_m} == CSB_MASK_SEL);
-
-        GTP_DRM9K # (
+        GTP_DRM18K # (
         
                  .INIT_00        (INIT_00[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
                  .INIT_01        (INIT_01[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
@@ -523,9 +512,43 @@ generate
                  .INIT_1D        (INIT_1D[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
                  .INIT_1E        (INIT_1E[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
                  .INIT_1F        (INIT_1F[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_20        (INIT_20[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_21        (INIT_21[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_22        (INIT_22[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_23        (INIT_23[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_24        (INIT_24[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_25        (INIT_25[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_26        (INIT_26[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_27        (INIT_27[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_28        (INIT_28[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_29        (INIT_29[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_2A        (INIT_2A[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_2B        (INIT_2B[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_2C        (INIT_2C[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_2D        (INIT_2D[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_2E        (INIT_2E[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_2F        (INIT_2F[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_30        (INIT_30[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_31        (INIT_31[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_32        (INIT_32[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_33        (INIT_33[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_34        (INIT_34[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_35        (INIT_35[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_36        (INIT_36[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_37        (INIT_37[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_38        (INIT_38[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_39        (INIT_39[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_3A        (INIT_3A[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_3B        (INIT_3B[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_3C        (INIT_3C[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_3D        (INIT_3D[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_3E        (INIT_3E[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
+                 .INIT_3F        (INIT_3F[(gen_j * DATA_LOOP_NUM + gen_i)*288 +: 288]),
          
                  .GRS_EN                   ( "FALSE"                  ),
                  .SIM_DEVICE               ( c_SIM_DEVICE             ),
+                 .CSA_MASK                 ( CSA_MASK_SEL             ),
+                 .CSB_MASK                 ( CSB_MASK_SEL             ),
                  .DATA_WIDTH_A             ( DRM_DATA_WIDTH_SEL       ),    // 1 2 4 8 16 9 18
                  .DATA_WIDTH_B             ( DRM_DATA_WIDTH_SEL       ),    // 1 2 4 8 16 9 18
                  .WRITE_MODE_A             ( c_WRITE_MODE             ),
@@ -542,24 +565,26 @@ generate
                  .RAM_ADDR_WIDTH           ( ADDR_WIDTH               ),
                  .RAM_DATA_WIDTH           ( CAS_DATA_WIDTH           ),
                  .INIT_FORMAT              ( c_INIT_FORMAT            )    //binary or hex
-        ) U_GTP_DRM9K (
+        ) U_GTP_DRM18K (
                 .DOA(QA_bus[(gen_i*18+gen_j*18*DATA_LOOP_NUM) +:18]),
-                .ADDRA(drm_addr[gen_i*13 +: 13]),            //wr_addr[13:0]
+                .ADDRA(drm_addr[gen_i*14 +: 14]),            //wr_addr[13:0]
                 .ADDRA_HOLD(addr_strobe),
                 .DIA(DA_bus[gen_i*18 +:18]),
+                .CSA({cs_bit2_bus_m[gen_j],cs_bit1_bus_m[gen_j],cs_bit0_m}),
                 .WEA(wr_en),
                 .CLKA(clk),
-                .CEA(csa_mask_wr[gen_i + DATA_LOOP_NUM*gen_j] & clk_en),
+                .CEA(clk_en),
                 .ORCEA(rd_oce),
                 .RSTA(rst),
 
                 .DOB(QB_bus[(gen_i*18+gen_j*18*DATA_LOOP_NUM) +:18]),
-                .ADDRB(drm_b_addr[gen_i*13 +: 13]),             //rd_addr[13:0]
+                .ADDRB(drm_b_addr[gen_i*14 +: 14]),             //rd_addr[13:0]
                 .ADDRB_HOLD(addr_strobe),
                 .DIB(DB_bus[gen_i*18 +:18]),
+                .CSB({csb_bit2_bus_m[gen_j],csb_bit1_bus_m[gen_j],csb_bit0_m}),
                 .WEB(wr_en_b),
                 .CLKB(clk),
-                .CEB(csb_mask_wr[gen_i + DATA_LOOP_NUM*gen_j] & clk_en_b),
+                .CEB(clk_en_b),
                 .ORCEB(rd_oce),
                 .RSTB(rst)
        );

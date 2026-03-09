@@ -17,6 +17,7 @@
 
 module PLL_IP (
     clkin1,
+    pll_rst,
     clkout0,
     
     pll_lock
@@ -25,13 +26,13 @@ module PLL_IP (
     localparam real CLKIN_FREQ          = 50.0;
     localparam integer STATIC_RATIOI    = 2;
     localparam integer STATIC_RATIO0    = 6;
-    localparam integer STATIC_RATIO1    = 16;
+    localparam integer STATIC_RATIO1    = 12;
     localparam integer STATIC_RATIO2    = 16;
     localparam integer STATIC_RATIO3    = 16;
     localparam integer STATIC_RATIO4    = 16;
     localparam integer STATIC_RATIOF    = 24;
     localparam integer STATIC_DUTY0     = 6;
-    localparam integer STATIC_DUTY1     = 16;
+    localparam integer STATIC_DUTY1     = 12;
     localparam integer STATIC_DUTY2     = 16;
     localparam integer STATIC_DUTY3     = 16;
     localparam integer STATIC_DUTY4     = 16;
@@ -97,6 +98,7 @@ module PLL_IP (
     
 
     input clkin1;
+    input pll_rst;
     output clkout0;
     
     output pll_lock;
@@ -158,8 +160,6 @@ module PLL_IP (
     assign clkin_sel_en = 1'b0;
     
     assign pll_pwd      = 1'b0;
-    
-    assign pll_rst      = 1'b0;
     
     assign rstodiv      = 1'b0;
 

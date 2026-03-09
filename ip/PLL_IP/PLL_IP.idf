@@ -85,7 +85,7 @@
         </param>
         <param>
             <name>CLKOUT0_FREQ</name>
-            <value>100.0</value>
+            <value>25.0</value>
         </param>
         <param>
             <name>CLKOUT0_GATE_EN_advancedPage</name>
@@ -486,7 +486,7 @@
         </param>
         <param>
             <name>RST_ENABLE_basicPage</name>
-            <value>false</value>
+            <value>true</value>
         </param>
         <param>
             <name>SHOW_SETTING_EN_basicPage</name>
@@ -534,7 +534,7 @@
         </param>
         <param>
             <name>STATIC_DUTY1_basicPage</name>
-            <value>16</value>
+            <value>12</value>
         </param>
         <param>
             <name>STATIC_DUTY2_advancedPage</name>
@@ -618,7 +618,7 @@
         </param>
         <param>
             <name>STATIC_RATIO1_basicPage</name>
-            <value>16</value>
+            <value>12</value>
         </param>
         <param>
             <name>STATIC_RATIO2_advancedPage</name>
@@ -684,7 +684,6 @@
         <pin>
             <name>pll_rst</name>
             <text>pll_rst</text>
-            <visible>0</visible>
             <dir>input</dir>
             <pos>left</pos>
         </pin>

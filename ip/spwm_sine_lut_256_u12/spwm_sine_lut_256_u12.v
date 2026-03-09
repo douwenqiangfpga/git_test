@@ -23,7 +23,7 @@ module spwm_sine_lut_256_u12
     );
 
 
-localparam ADDR_WIDTH = 8 ; // @IPC int 9,20
+localparam ADDR_WIDTH = 10 ; // @IPC int 9,20
 
 localparam DATA_WIDTH = 12 ; // @IPC int 1,1152
 
@@ -37,7 +37,7 @@ localparam RESET_TYPE = "ASYNC" ; // @IPC enum ASYNC,SYNC,Sync_Internally
 
 localparam POWER_OPT = 0 ; // @IPC bool
 
-localparam INIT_FILE = "E:/FPGA/ainuo/AN1640/test_prj/spwm/SPWM/source/sine_256_u12.dat" ; // @IPC string
+localparam INIT_FILE = "E:/FPGA/ainuo/AN1640/git_test/doc/spwm_sine_256_u12.dat" ; // @IPC string
 
 localparam INIT_FORMAT = "HEX" ; // @IPC enum BIN,HEX
 

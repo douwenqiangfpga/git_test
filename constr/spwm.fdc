@@ -36,4 +36,4 @@ define_attribute {p:o_pwm1} {PAP_IO_PULLDW} {TRUE}
 define_attribute {p:o_pwm2} {PAP_IO_PULLDW} {TRUE}
 define_attribute {p:o_pwm3} {PAP_IO_PULLDW} {TRUE}
 define_attribute {p:o_pwm4} {PAP_IO_PULLDW} {TRUE}
-define_attribute {p:o_pwm1} {PAP_IO_OPEN_DRAIN} {ON}
+

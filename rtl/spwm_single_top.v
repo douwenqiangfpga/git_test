@@ -139,7 +139,7 @@ module spwm_single_top #(
 
     // 乘法位宽
     wire [SINE_W+MOD_W-1:0] mult_sine_mod/*synthesis PAP_MARK_DEBUG = "1"*/;
-    assign mult_sine_mod = sine_u * MOD_INDEX;
+    assign mult_sine_mod = sine_u << 'd11;
 
     // 归一化到 SINE_W 位宽（等效 / (2^MOD_W)）
     wire [SINE_W-1:0] sine_mod_u/*synthesis PAP_MARK_DEBUG = "1"*/;
@@ -149,7 +149,7 @@ module spwm_single_top #(
     // 为简化资源，这里用乘法后右移近似（当 CARRIER_MAX 接近 2^REF_W 时效果好）
     // 如果你想更准，可换成精确除法或预先把LUT直接做成载波幅值范围
     wire [SINE_W+CARRIER_W-1:0] mult_ref_map/*synthesis PAP_MARK_DEBUG = "1"*/;
-    assign mult_ref_map = sine_mod_u * CARRIER_MAX[CARRIER_W-1:0];
+    assign mult_ref_map = sine_mod_u << 'd11;
 
     wire [REF_W-1:0] ref_cmp/*synthesis PAP_MARK_DEBUG = "1"*/;
     assign ref_cmp = mult_ref_map[SINE_W+CARRIER_W-1 -: REF_W];

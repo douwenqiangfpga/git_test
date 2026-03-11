@@ -152,9 +152,9 @@ module spwm_single_top #(
     assign mult_ref_map = sine_mod_u << 'd11;
 
     wire [REF_W-1:0] ref_cmp/*synthesis PAP_MARK_DEBUG = "1"*/;
-    assign ref_cmp = mult_ref_map[SINE_W+CARRIER_W-1 -: REF_W];
+    assign ref_cmp = mult_ref_map[SINE_W+CARRIER_W-1 -: REF_W]>>'d2;
 
-    assign o_ref_cmp = ref_cmp;
+    assign o_ref_cmp = ref_cmp ;
 
     //============================================================
     // 5) 比较器：原始SPWM

@@ -100,6 +100,9 @@ vlog -sv "$IP_DIR/spwm_sine_lut_256_u12/rtl/ipml_rom_v1_7_spwm_sine_lut_256_u12.
 vlog -sv "$IP_DIR/spwm_sine_lut_256_u12/rtl/spwm_sine_lut_256_u12_init_param.v"
 vlog -sv "$IP_DIR/spwm_sine_lut_256_u12/spwm_sine_lut_256_u12.v"
 
+vlog -sv "$IP_DIR/mul_ip/mul_ip.v"
+vlog -sv "$IP_DIR/mul_ip/rtl/ipml_mult_v1_3_mul_ip.v"
+
 # =========================================================
 # 编译 RTL 文件
 # =========================================================

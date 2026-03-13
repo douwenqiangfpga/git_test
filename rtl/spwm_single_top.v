@@ -48,10 +48,12 @@ module spwm_single_top #(
     reg                 update_tick/*synthesis PAP_MARK_DEBUG = "1"*/;   // 每个PWM周期更新一次（在回到0点时打1拍）
 
     // DDS频率控制字
-    localparam integer PHASE_STEP =   'd2147483;//(2^PHASE_ACC_W)*50/100K
+    localparam integer PHASE_STEP =   'd2147484;//(2^PHASE_ACC_W)*50/100K
     // 调制比：0 ~ (2^MOD_W - 1) 对应 0~约1.0
     localparam integer MOD_INDEX    =   'd2048;
     localparam integer CARRIER_MAX = PWM_PERIOD_CNT - 1;
+
+    localparam integer MID_CNT     = PWM_PERIOD_CNT / 2; // 中点计数（约等于 MAX/2）
 
     always @(posedge i_clk or negedge i_rst_n) begin
         if (!i_rst_n) begin
@@ -65,21 +67,19 @@ module spwm_single_top #(
         end else begin
             update_tick <= 1'b0;
 
+            // 无停顿中心对齐三角，顶点处 update
             if (!carrier_dir) begin
-                // up count
-                if (carrier_cnt == CARRIER_MAX) begin
+                if (carrier_cnt == CARRIER_MAX[CARRIER_W-1:0]) begin
                     carrier_dir <= 1'b1;
-                    // 顶点保持1拍后下数（也可改成立即回退）
-                    carrier_cnt <= carrier_cnt;
+                    carrier_cnt <= carrier_cnt - 1'b1;
+                    update_tick <= 1'b1;     // 最大值处更新
                 end else begin
                     carrier_cnt <= carrier_cnt + 1'b1;
                 end
             end else begin
-                // down count
                 if (carrier_cnt == {CARRIER_W{1'b0}}) begin
                     carrier_dir <= 1'b0;
-                    carrier_cnt <= carrier_cnt;
-                    update_tick <= 1'b1; // 在0点更新正弦参考（每完整PWM周期1次）
+                    carrier_cnt <= carrier_cnt + 1'b1;
                 end else begin
                     carrier_cnt <= carrier_cnt - 1'b1;
                 end
@@ -115,12 +115,6 @@ module spwm_single_top #(
     //============================================================
     wire [SINE_W-1:0] sine_u;
 
-    //spwm_sine_lut_256_u12 u_sine_lut (
-    //    .i_clk   (i_clk),
-    //    .i_addr  (lut_addr),
-    //    .o_data  (sine_u)
-    //);
-
     spwm_sine_lut_256_u12 u_sine_lut (
       .addr(lut_addr),          // input [9:0]
       .clk(i_clk),            // input
@@ -129,32 +123,113 @@ module spwm_single_top #(
     );
 
     //============================================================
-    // 4) 幅值调制 + 映射到载波范围
+    // 4) ✅ 中点对齐的双极性正弦实现（关键改动在这里）
     //
-    // sine_u 是 0~(2^SINE_W-1)
-    // MOD_INDEX 是 0~(2^MOD_W-1)
-    //
-    // 先做归一化乘法，再映射到 0~CARRIER_MAX
+    // sine_u: 0..4095, center=2048
+    // sin_bip0: -2048..+2047
+    // sin_scaled = sin_bipolar * MOD_INDEX / 4096
+    // ref = MID_CNT + sin_scaled
+    // clamp to 0..CARRIER_MAX
+    
     //============================================================
+  localparam integer MOD_SHIFT   = 12;               // b=12 -> /4096
+  localparam integer NORM_SHIFT  = MOD_SHIFT + 11;   // 再 /2048 -> >>24
 
-    // 乘法位宽
-    wire [SINE_W+MOD_W-1:0] mult_sine_mod/*synthesis PAP_MARK_DEBUG = "1"*/;
-    assign mult_sine_mod = sine_u << 'd11;
+  // ---------- Stage0: latch inputs ----------
+  reg        v0;
+  reg signed [12:0] sin_bip0;
+  reg [11:0] mod0;
+  reg [9:0]  mid0;          // MID_CNT=250 fits 10b
+  always @(posedge i_clk or negedge i_rst_n) begin
+    if (!i_rst_n) begin
+      v0 <= 1'b0;
+      sin_bip0 <= 'd0;
+      mod0 <= 'd0;
+      mid0 <= 'd0;
+    end else begin
+      v0 <= update_tick;
+      if (update_tick) begin
+        sin_bip0 <= $signed({1'b0, sine_u}) - 13'sd2048;// -2048..+2047
+        mod0     <= MOD_INDEX;
+        mid0     <= MID_CNT[9:0];
+      end
+    end
+  end
 
-    // 归一化到 SINE_W 位宽（等效 / (2^MOD_W)）
-    wire [SINE_W-1:0] sine_mod_u/*synthesis PAP_MARK_DEBUG = "1"*/;
-    assign sine_mod_u = mult_sine_mod[SINE_W+MOD_W-1 -: SINE_W]; // 截高位，简单稳定
+    // ---------- Stage1: prod1 = sin_bip0 * mod0 ----------
+    wire        v1;
+    wire signed [24:0] prod1;     // 13x12 -> 25
+    mul_ip u_mul1 (
+      .a(sin_bip0),        // input [12:0]
+      .b(mod0),        // input [11:0]
+      .clk(i_clk),    // input
+      .rst(!i_rst_n),    // input
+      .ce(v0),      // input
+      .p(prod1)         // output [24:0]
+    );
 
-    // 再映射到载波范围：ref_cmp = sine_mod_u * CARRIER_MAX / (2^SINE_W -1)
-    // 为简化资源，这里用乘法后右移近似（当 CARRIER_MAX 接近 2^REF_W 时效果好）
-    // 如果你想更准，可换成精确除法或预先把LUT直接做成载波幅值范围
-    wire [SINE_W+CARRIER_W-1:0] mult_ref_map/*synthesis PAP_MARK_DEBUG = "1"*/;
-    assign mult_ref_map = sine_mod_u << 'd11;
+    // v1 = v0 延迟3拍，对齐 prod1
+    reg [2:0] v0_d;
+    always @(posedge i_clk or negedge i_rst_n) begin
+      if (!i_rst_n) v0_d <= 3'b000;
+      else v0_d <= {v0_d[1:0], v0};
+    end
+    assign v1 = v0_d[2];
 
-    wire [REF_W-1:0] ref_cmp/*synthesis PAP_MARK_DEBUG = "1"*/;
-    assign ref_cmp = mult_ref_map[SINE_W+CARRIER_W-1 -: REF_W]>>'d2;
+    // ---------- Stage2：常数乘 MID=250（用移位加减，易过时序） ----------
+    // 250 = 256 - 4 - 2
+    // prod_mid = prod1*256 - prod1*4 - prod1*2
+    reg        v2;
+    reg signed [33:0] prod_mid; // 25bit * 8bit 常数后，留足位宽（>=25+8+1）    
 
-    assign o_ref_cmp = ref_cmp ;
+    always @(posedge i_clk or negedge i_rst_n) begin
+      if (!i_rst_n) begin
+        v2 <= 1'b0;
+        prod_mid <= 'd0;
+      end else begin
+        v2 <= v1;
+        if (v1) begin
+          prod_mid <= ($signed(prod1) <<< 8)   // *256
+                    - ($signed(prod1) <<< 2)   // - *4
+                    - ($signed(prod1) <<< 1);  // - *2
+        end
+      end
+    end
+
+    // ---------- Stage3：归一化 + 加MID + clamp -> ref_cmp_r ----------
+    reg        v3;
+    reg [REF_W-1:0] ref_cmp_r;
+    reg [REF_W-1:0] ref_new;
+    reg signed [12:0] sin_scaled;
+    reg signed [13:0] ref_s;
+    always @(posedge i_clk or negedge i_rst_n) begin
+      if (!i_rst_n) begin
+        v3 <= 1'b0;
+        ref_new <= 'd0;
+      end else begin
+        v3 <= v2;
+        if (v2) begin
+          // sin_scaled ≈ sin(ωt)*MID*MOD，范围约 [-MID..+MID]
+          // 归一化：/4096 再 /2048 => >>>23        
+          sin_scaled = $signed(prod_mid) >>> (NORM_SHIFT); // >>>23
+          ref_s      = $signed(MID_CNT) + $signed(sin_scaled);    
+          if (ref_s <= 0)
+            ref_new <= {REF_W{1'b0}};
+          else if (ref_s >= $signed(CARRIER_MAX))
+            ref_new <= CARRIER_MAX[REF_W-1:0];
+          else
+            ref_new <= ref_s[REF_W-1:0];
+        end
+      end
+    end
+
+    // ---------- Stage4: compare (align carrier) ----------
+    reg [CARRIER_W-1:0] carrier_d1, carrier_d2, carrier_d3;
+    always @(posedge i_clk) begin
+      carrier_d1 <= carrier_cnt;
+      carrier_d2 <= carrier_d1;
+      carrier_d3 <= carrier_d2; // 你这里延迟几拍，按 v3 相对 carrier 的延迟调整
+    end
 
     //============================================================
     // 5) 比较器：原始SPWM
@@ -162,17 +237,16 @@ module spwm_single_top #(
     reg pwm_raw_r;
 
     always @(posedge i_clk or negedge i_rst_n) begin
-        if (!i_rst_n) begin
-            pwm_raw_r <= 1'b0;
-        end else if (!i_en) begin
-            pwm_raw_r <= 1'b0;
-        end else begin
-            pwm_raw_r <= (ref_cmp > carrier_cnt);
+      if (!i_rst_n) pwm_raw_r <= 1'b0;
+      else begin
+          if (!i_en) pwm_raw_r <= 1'b0;
+          else if (v3) ref_cmp_r <= ref_new;   // 只在更新点更新参考
+          pwm_raw_r <= (ref_cmp_r > carrier_d3); // 每拍比较产生PWM
         end
     end
 
     assign o_pwm_raw = pwm_raw_r;
-
+    assign o_ref_cmp = ref_cmp_r;
     //============================================================
     // 6) 死区 + 互补输出
     //============================================================

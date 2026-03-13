@@ -1,6 +1,12 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
 
+add wave -noupdate -divider "top"
+add wave -noupdate /tb_top/u_top/o_pwm1
+add wave -noupdate /tb_top/u_top/o_pwm2
+add wave -noupdate /tb_top/u_top/o_pwm3
+add wave -noupdate /tb_top/u_top/o_pwm4
+
 add wave -noupdate -divider "ctrl"
 add wave -noupdate /tb_top/u_top/spwm_single_top_inst/i_clk
 add wave -noupdate /tb_top/u_top/spwm_single_top_inst/i_rst_n
@@ -25,6 +31,26 @@ add wave -noupdate /tb_top/u_top/spwm_single_top_inst/phase_acc
 add wave -noupdate /tb_top/u_top/spwm_single_top_inst/sine_u
 add wave -noupdate /tb_top/u_top/spwm_single_top_inst/sine_mod_u
 add wave -noupdate /tb_top/u_top/spwm_single_top_inst/ref_cmp
+
+# ============================
+# LUT / sine / scaling
+# ============================
+add wave -noupdate -divider "SINE_AND_SCALE"
+add wave -noupdate /tb_top/u_top/spwm_single_top_inst/sine_u
+add wave -noupdate /tb_top/u_top/spwm_single_top_inst/sin_bip0
+add wave -noupdate /tb_top/u_top/spwm_single_top_inst/prod1
+add wave -noupdate /tb_top/u_top/spwm_single_top_inst/prod_mid
+add wave -noupdate /tb_top/u_top/spwm_single_top_inst/sin_scaled
+add wave -noupdate /tb_top/u_top/spwm_single_top_inst/ref_s
+add wave -noupdate /tb_top/u_top/spwm_single_top_inst/ref_cmp_r
+add wave -noupdate /tb_top/u_top/spwm_single_top_inst/v0
+add wave -noupdate /tb_top/u_top/spwm_single_top_inst/v1
+add wave -noupdate /tb_top/u_top/spwm_single_top_inst/v2
+add wave -noupdate /tb_top/u_top/spwm_single_top_inst/v3
+
+add wave -noupdate /tb_top/u_top/spwm_single_top_inst/carrier_d1
+add wave -noupdate /tb_top/u_top/spwm_single_top_inst/carrier_d2
+add wave -noupdate /tb_top/u_top/spwm_single_top_inst/carrier_d3
 
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {0 ns}}

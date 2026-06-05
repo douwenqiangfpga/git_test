@@ -24,7 +24,7 @@ module spwm_single_top #(
     //========================
     // 死区参数（时钟周期）
     //========================
-    parameter integer DEADTIME_CYC   = 100           // 例如100MHz时 50cyc=500ns
+    parameter integer DEADTIME_CYC   = 20            // 100MHz时 50cyc=500ns
 )(
     input  wire                      i_clk,
     input  wire                      i_rst_n,
@@ -50,7 +50,7 @@ module spwm_single_top #(
     // DDS频率控制字
     localparam integer PHASE_STEP =   'd2147484;//(2^PHASE_ACC_W)*50/100K
     // 调制比：0 ~ (2^MOD_W - 1) 对应 0~约1.0
-    localparam integer MOD_INDEX    =   'd2048;
+    localparam integer MOD_INDEX    =   'd3277;
     localparam integer CARRIER_MAX = PWM_PERIOD_CNT - 1;
 
     localparam integer MID_CNT     = PWM_PERIOD_CNT / 2; // 中点计数（约等于 MAX/2）
@@ -138,7 +138,7 @@ module spwm_single_top #(
   // ---------- Stage0: latch inputs ----------
   reg        v0;
   reg signed [12:0] sin_bip0;
-  reg [11:0] mod0;
+  reg signed [12:0] mod0;
   reg [9:0]  mid0;          // MID_CNT=250 fits 10b
   always @(posedge i_clk or negedge i_rst_n) begin
     if (!i_rst_n) begin
@@ -150,7 +150,7 @@ module spwm_single_top #(
       v0 <= update_tick;
       if (update_tick) begin
         sin_bip0 <= $signed({1'b0, sine_u}) - 13'sd2048;// -2048..+2047
-        mod0     <= MOD_INDEX;
+        mod0     <= $signed({1'b0, MOD_INDEX[11:0]});
         mid0     <= MID_CNT[9:0];
       end
     end
@@ -158,14 +158,14 @@ module spwm_single_top #(
 
     // ---------- Stage1: prod1 = sin_bip0 * mod0 ----------
     wire        v1;
-    wire signed [24:0] prod1;     // 13x12 -> 25
+    wire signed [25:0] prod1;     // 13x13 -> 26
     mul_ip u_mul1 (
       .a(sin_bip0),        // input [12:0]
-      .b(mod0),        // input [11:0]
+      .b(mod0),        // input [12:0]
       .clk(i_clk),    // input
       .rst(!i_rst_n),    // input
       .ce(v0),      // input
-      .p(prod1)         // output [24:0]
+      .p(prod1)         // output [25:0]
     );
 
     // v1 = v0 延迟3拍，对齐 prod1

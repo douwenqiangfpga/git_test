@@ -31,7 +31,7 @@
         </param>
         <param>
             <name>BSIZE</name>
-            <value>12</value>
+            <value>13</value>
         </param>
         <param>
             <name>B_SIGNED</name>
@@ -84,7 +84,7 @@
             <text>b</text>
             <dir>input</dir>
             <pos>left</pos>
-            <msb>11</msb>
+            <msb>12</msb>
             <lsb>0</lsb>
         </pin>
         <pin>
@@ -110,7 +110,7 @@
             <text>p</text>
             <dir>output</dir>
             <pos>right</pos>
-            <msb>24</msb>
+            <msb>25</msb>
             <lsb>0</lsb>
         </pin>
     </pin_list>

@@ -27,7 +27,7 @@ module mul_ip
 
 localparam ASIZE = 13 ; //@IPC int 2,72
 
-localparam BSIZE = 12 ; //@IPC int 2,72
+localparam BSIZE = 13 ; //@IPC int 2,72
 
 localparam A_SIGNED = 1 ; //@IPC enum 0,1
 

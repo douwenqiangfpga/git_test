@@ -23,7 +23,7 @@ module top #(
     //========================
     // 死区参数（时钟周期）
     //========================
-    parameter integer DEADTIME_CYC   = 100 )          // 例如100MHz时 50cyc=500ns
+    parameter integer DEADTIME_CYC   = 20 )           // 100MHz时 50cyc=500ns
     (
          input       i_clk,
          input       i_rst_n,
@@ -82,7 +82,7 @@ spwm_single_top #(
     //========================
     // 死区参数（时钟周期）
     //========================
-   .DEADTIME_CYC   (100 )          // 例如100MHz时 50cyc=1000ns
+   .DEADTIME_CYC   (50 )           // 100MHz时 50cyc=500ns
 )spwm_single_top_inst(
    .i_clk         (clkout0),
    .i_rst_n       (i_rst_n),

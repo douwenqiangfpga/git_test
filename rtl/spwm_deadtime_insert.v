@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 
 module spwm_deadtime_insert #(
-    parameter integer DEADTIME_CYC = 50
+    parameter integer DEADTIME_CYC = 20
 )(
     input  wire i_clk,
     input  wire i_rst_n,
